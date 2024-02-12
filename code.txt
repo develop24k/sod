@@ -1,0 +1,96 @@
+Dim wksMain As Worksheet, wksSod As Worksheet
+Dim colLen As Integer
+Dim rowLen As Integer
+Dim rowNum As Integer
+Dim selRange As Range
+
+Sub Transform()
+
+On Error GoTo eh
+
+Set wksMain = Sheets("main")
+
+DeleteSheet
+AddSheet
+
+rowNum = 1
+wksSod.Range("A" & rowNum) = "Combination"
+wksSod.Range("B" & rowNum) = "Toxic"
+rowNum = 2
+Application.DisplayAlerts = True
+
+Sheets("main").Select
+
+Dim rng As Range, cell As Range, loopRange As Range
+Set rng = Selection
+
+Dim firstCell As String, lastCell As String
+firstCell = Split(rng.Address, ":")(0)
+lastCell = Split(rng.Address, ":")(1)
+Set loopRange = Range(firstCell)
+
+colLen = Range(lastCell).Column - Range(firstCell).Column
+rowLen = Range(lastCell).Row - Range(firstCell).Row
+
+Range(lastCell).Offset(0, 1).Select
+
+Dim i As Integer, j As Integer, k As Integer
+Dim sideVal As String
+
+k = 1
+
+For j = 0 To rowLen
+
+sideVal = loopRange.Offset(j, -1).Value2
+
+For i = 0 To colLen
+'Debug.Print sideVal + " vs " + looprange.Offset(j - k, i).Value2
+wksSod.Range("A" & rowNum) = (sideVal + " vs " + loopRange.Offset(j - k, i).Value2)
+wksSod.Range("B" & rowNum) = loopRange.Offset(j, i).Value
+'Debug.Print looprange.Offset(j, i).Value2
+rowNum = rowNum + 1
+Next i
+
+'Debug.Print "-----"
+k = k + 1
+
+Next j
+
+ActiveWorkbook.Sheets("SOD List").Activate
+Cells.Columns.AutoFit
+Range("A:B").Font.Size = 9
+'Range("A1:B1").Font.Color = vbGreen
+Range("A:B").Font.Name = "Veranda"
+Range("A1:B1").Font.Bold = True
+Done:
+    Exit Sub
+eh:
+    MsgBox "The following error occurred: " & Err.Description
+
+'
+End Sub
+
+Sub DeleteSheet()
+
+ WS_Count = ActiveWorkbook.Worksheets.Count
+ Application.DisplayAlerts = False
+
+         ' Begin the loop.
+         For i = 1 To WS_Count
+         
+         If ActiveWorkbook.Worksheets(i).Name = "SOD List" Then
+            Sheets("SOD List").Delete
+            Exit Sub
+         End If
+                  
+         Next i
+
+
+End Sub
+
+Sub AddSheet()
+
+Sheets.Add.Name = "SOD List"
+Set wksSod = Sheets("SOD List")
+
+End Sub
